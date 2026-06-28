@@ -1,8 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
+import { cookies } from 'next/headers'
 import { Profile } from '@/types/database'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { DeleteMemberButton } from '@/components/members/DeleteMemberButton'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 
@@ -15,7 +17,6 @@ const POSITION_LABEL: Record<string, string> = {
 }
 
 type Props = {
-  // Next.js が URL の [id] 部分を params として渡してくれる
   params: Promise<{ id: string }>
 }
 
@@ -23,21 +24,25 @@ export default async function MemberDetailPage({ params }: Props) {
   const { id } = await params
   const supabase = await createClient()
 
-  // idに一致するメンバーを1件取得
   const { data: member, error } = await supabase
     .from('profiles')
     .select('*')
-    .eq('id', id)   // eq = equal (WHERE id = ?)
-    .single()       // 1件だけ取得 (0件 or 複数件はエラーになる)
+    .eq('id', id)
+    .single()
 
-  // 存在しないIDにアクセスしたら404ページを表示
   if (error || !member) notFound()
+
+  // admin判定
+  const cookieStore = await cookies()
+  const userName = cookieStore.get('proto_user_name')?.value ?? ''
+  const { data: myProfile } = await supabase
+    .from('profiles').select('role').eq('name', userName).single()
+  const isAdmin = myProfile?.role === 'admin'
 
   const profile = member as Profile
 
   return (
     <div className="max-w-lg">
-      {/* 戻るリンク */}
       <Link href="/members" className="text-sm text-gray-500 hover:text-gray-700 mb-6 inline-block">
         ← メンバー一覧に戻る
       </Link>
@@ -79,6 +84,19 @@ export default async function MemberDetailPage({ params }: Props) {
               </dd>
             </div>
           </dl>
+
+          {/* admin用: 編集・削除ボタン */}
+          {isAdmin && (
+            <div className="flex gap-3 justify-end mt-6 pt-4 border-t border-gray-100">
+              <DeleteMemberButton memberId={profile.id} memberName={profile.name} />
+              <Link
+                href={`/members/${profile.id}/edit`}
+                className="px-4 py-2 text-sm bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-medium"
+              >
+                編集する
+              </Link>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
