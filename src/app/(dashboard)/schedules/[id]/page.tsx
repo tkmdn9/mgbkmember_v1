@@ -47,7 +47,7 @@ export default async function ScheduleDetailPage({ params, searchParams }: Props
   if (error || !schedule) notFound()
 
   const { data: members } = await supabase
-    .from('profiles').select('id, name, jersey_no, position, gym_fee_paid').order('name')
+    .from('profiles').select('id, name, jersey_no, position').order('name')
 
   const { data: attendances } = await supabase
     .from('attendances').select('user_id, status').eq('schedule_id', id)
@@ -140,7 +140,7 @@ export default async function ScheduleDetailPage({ params, searchParams }: Props
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         {displayedMembers.length > 0 ? (
           <ul className="divide-y divide-gray-100">
-            {displayedMembers.map((member: Pick<Profile, 'id' | 'name' | 'jersey_no' | 'position' | 'gym_fee_paid'>) => {
+            {displayedMembers.map((member: Pick<Profile, 'id' | 'name' | 'jersey_no' | 'position'>) => {
               const status = statusMap[member.id] ?? 'pending'
               const cfg = STATUS_CONFIG[status]
               return (
@@ -156,18 +156,9 @@ export default async function ScheduleDetailPage({ params, searchParams }: Props
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${
-                      member.gym_fee_paid
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-gray-100 text-gray-400'
-                    }`}>
-                      {member.gym_fee_paid ? '✅ 振込済' : '⬜ 未振込'}
-                    </span>
-                    <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${cfg.bg} ${cfg.text}`}>
-                      {cfg.label}
-                    </span>
-                  </div>
+                  <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${cfg.bg} ${cfg.text}`}>
+                    {cfg.label}
+                  </span>
                 </li>
               )
             })}
