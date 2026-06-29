@@ -15,9 +15,10 @@ const NAV_ITEMS = [
 
 type Props = {
   userName: string
+  profileId: string | null
 }
 
-export function Sidebar({ userName }: Props) {
+export function Sidebar({ userName, profileId }: Props) {
   // usePathname() は現在のURLパスを返すフック (Client Componentでのみ使える)
   const pathname = usePathname()
 
@@ -52,7 +53,10 @@ export function Sidebar({ userName }: Props) {
 
       {/* ユーザー情報 & ログアウト */}
       <div className="px-3 py-3 border-t border-gray-100">
-        <div className="flex items-center gap-3 px-2 py-2 rounded-lg bg-gray-50 mb-2">
+        <Link
+          href={profileId ? `/members/${profileId}` : '#'}
+          className="flex items-center gap-3 px-2 py-2 rounded-lg bg-gray-50 mb-2 hover:bg-orange-50 transition-colors"
+        >
           {/* アバター */}
           <div className="w-9 h-9 rounded-full bg-orange-500 text-white font-bold text-sm flex items-center justify-center shrink-0">
             {userName.charAt(0)}
@@ -62,7 +66,7 @@ export function Sidebar({ userName }: Props) {
             <p className="text-xs text-gray-400 leading-none mb-0.5">ログイン中</p>
             <p className="text-sm font-semibold text-gray-800 truncate">{userName}</p>
           </div>
-        </div>
+        </Link>
         {/* ログアウトボタン */}
         <form action={logout}>
           <button
