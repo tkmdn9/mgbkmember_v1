@@ -4,7 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
-// announcements.ts / schedules.ts と同じパターン
+export type ActionState = { error: string | null }
+
 async function getAdminProfile() {
   const cookieStore = await cookies()
   const userName = cookieStore.get('proto_user_name')?.value
@@ -20,25 +21,25 @@ async function getAdminProfile() {
   return data?.role === 'admin' ? data : null
 }
 
-export async function createMember(formData: FormData) {
+export async function createMember(prevState: ActionState, formData: FormData): Promise<ActionState> {
   const admin = await getAdminProfile()
   if (!admin) redirect('/members')
 
-  const name      = (formData.get('name') as string)?.trim()
-  const jerseyNo  = formData.get('jersey_no') as string
-  const position  = (formData.get('position') as string) || null
+  const name       = (formData.get('name') as string)?.trim()
+  const jerseyNo   = formData.get('jersey_no') as string
+  const position   = (formData.get('position') as string) || null
   const role       = (formData.get('role') as string) || 'member'
   const bio        = (formData.get('bio') as string)?.trim() || null
   const department = (formData.get('department') as string)?.trim() || null
 
-  if (!name) return
+  if (!name) return { error: null }
 
   const supabase = await createClient()
 
   if (jerseyNo) {
     const { data: taken } = await supabase
       .from('profiles').select('id').eq('jersey_no', parseInt(jerseyNo)).single()
-    if (taken) redirect('/members/new?error=jersey_taken')
+    if (taken) return { error: 'jersey_taken' }
   }
 
   await supabase.from('profiles').insert({
@@ -53,25 +54,25 @@ export async function createMember(formData: FormData) {
   redirect('/members')
 }
 
-export async function updateMember(id: string, formData: FormData) {
+export async function updateMember(id: string, prevState: ActionState, formData: FormData): Promise<ActionState> {
   const admin = await getAdminProfile()
   if (!admin) redirect('/members')
 
-  const name     = (formData.get('name') as string)?.trim()
-  const jerseyNo = formData.get('jersey_no') as string
-  const position = (formData.get('position') as string) || null
+  const name       = (formData.get('name') as string)?.trim()
+  const jerseyNo   = formData.get('jersey_no') as string
+  const position   = (formData.get('position') as string) || null
   const role       = (formData.get('role') as string) || 'member'
   const bio        = (formData.get('bio') as string)?.trim() || null
   const department = (formData.get('department') as string)?.trim() || null
 
-  if (!name) return
+  if (!name) return { error: null }
 
   const supabase = await createClient()
 
   if (jerseyNo) {
     const { data: taken } = await supabase
       .from('profiles').select('id').eq('jersey_no', parseInt(jerseyNo)).neq('id', id).single()
-    if (taken) redirect(`/members/${id}/edit?error=jersey_taken`)
+    if (taken) return { error: 'jersey_taken' }
   }
 
   await supabase
@@ -89,7 +90,7 @@ export async function updateMember(id: string, formData: FormData) {
   redirect(`/members/${id}`)
 }
 
-export async function updateSelfProfile(id: string, formData: FormData) {
+export async function updateSelfProfile(id: string, prevState: ActionState, formData: FormData): Promise<ActionState> {
   const cookieStore = await cookies()
   const userName = cookieStore.get('proto_user_name')?.value
   if (!userName) redirect('/login')
@@ -108,7 +109,7 @@ export async function updateSelfProfile(id: string, formData: FormData) {
   if (jerseyNo) {
     const { data: taken } = await supabase
       .from('profiles').select('id').eq('jersey_no', parseInt(jerseyNo)).neq('id', id).single()
-    if (taken) redirect(`/members/${id}/edit?error=jersey_taken`)
+    if (taken) return { error: 'jersey_taken' }
   }
 
   await supabase
@@ -130,8 +131,6 @@ export async function deleteMember(id: string) {
 
   const supabase = await createClient()
 
-  // attendances に user_id の外部キー制約があるため、先に削除する
-  // (CASCADEが設定されていないため、順番を守らないとエラーになる)
   await supabase.from('attendances').delete().eq('user_id', id)
   await supabase.from('profiles').delete().eq('id', id)
 
