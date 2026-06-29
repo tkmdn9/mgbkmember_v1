@@ -67,6 +67,13 @@ export function Sidebar({ userName, profileId }: Props) {
             <p className="text-sm font-semibold text-gray-800 truncate">{userName}</p>
           </div>
         </Link>
+        {/* 利用ガイド */}
+        <Link
+          href="/guide"
+          className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition-colors mb-1"
+        >
+          📖 利用ガイド
+        </Link>
         {/* ログアウトボタン */}
         <form action={logout}>
           <button

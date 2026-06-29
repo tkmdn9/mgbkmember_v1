@@ -39,6 +39,9 @@ export default async function LoginPage({ searchParams }: Props) {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       {/* 右上リンク */}
       <div className="absolute top-4 right-4 flex gap-3 text-sm">
+        <Link href="/guide" className="text-gray-400 hover:text-orange-500 transition-colors">
+          利用ガイド
+        </Link>
         <Link href="/public-members" className="text-gray-500 hover:text-orange-500 transition-colors">
           メンバー確認
         </Link>
