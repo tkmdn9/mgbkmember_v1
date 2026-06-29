@@ -23,7 +23,6 @@ type Props = {
 
 export function MemberListWithSearch({ members, isAdmin }: Props) {
   const [query, setQuery] = useState('')
-  // 楽観的 UI 用: memberId → gym_fee_paid
   const [paidMap, setPaidMap] = useState<Record<string, boolean>>(
     () => Object.fromEntries(members.map((m) => [m.id, m.gym_fee_paid]))
   )
@@ -45,7 +44,6 @@ export function MemberListWithSearch({ members, isAdmin }: Props) {
 
   return (
     <>
-      {/* 検索ボックス */}
       <div className="mb-4">
         <input
           type="text"
@@ -63,7 +61,6 @@ export function MemberListWithSearch({ members, isAdmin }: Props) {
               const paid = paidMap[member.id] ?? member.gym_fee_paid
               return (
                 <li key={member.id} className="flex items-center gap-3 px-4 lg:px-6 py-4 hover:bg-gray-50 transition-colors">
-                  {/* メンバー情報 */}
                   <Link href={`/members/${member.id}`} className="flex items-center gap-4 flex-1 min-w-0">
                     <Avatar>
                       <AvatarImage src={member.avatar_url ?? undefined} />
@@ -91,30 +88,27 @@ export function MemberListWithSearch({ members, isAdmin }: Props) {
 
                   {/* 振込状況 */}
                   {isAdmin ? (
+                    // 管理者: 振込済は緑バッジ、未振込は小さなグレーボタン（テキストなし）
                     <button
                       onClick={() => handleToggle(member.id)}
-                      title={paid ? '振込済（クリックで未振込に変更）' : '未振込（クリックで振込済に変更）'}
-                      className={`shrink-0 flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium transition-colors ${
+                      title={paid ? '振込済（クリックで取消）' : 'クリックで振込済にする'}
+                      className={`shrink-0 transition-colors ${
                         paid
-                          ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                          : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                          ? 'flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 hover:bg-green-200'
+                          : 'w-6 h-6 rounded-full border-2 border-gray-200 hover:border-green-300 hover:bg-green-50'
                       }`}
                     >
-                      {paid ? '✅ 振込済' : '⬜ 未振込'}
+                      {paid ? '✅ 振込済' : ''}
                     </button>
                   ) : (
-                    <span
-                      className={`shrink-0 flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
-                        paid
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-gray-100 text-gray-400'
-                      }`}
-                    >
-                      {paid ? '✅ 振込済' : '⬜ 未振込'}
-                    </span>
+                    // 一般: 振込済のみ表示、未振込は非表示
+                    paid ? (
+                      <span className="shrink-0 flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                        ✅ 振込済
+                      </span>
+                    ) : null
                   )}
 
-                  {/* admin用: 編集・削除 */}
                   {isAdmin && (
                     <div className="flex items-center gap-2 shrink-0">
                       <Link
