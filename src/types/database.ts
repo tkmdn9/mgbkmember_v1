@@ -10,6 +10,7 @@ export type Profile = {
   bio: string | null
   department: string | null
   avatar_url: string | null
+  gym_fee_paid: boolean
   created_at: string
 }
 

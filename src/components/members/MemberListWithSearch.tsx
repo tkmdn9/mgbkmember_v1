@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { DeleteMemberButton } from '@/components/members/DeleteMemberButton'
+import { toggleGymFeePaid } from '@/actions/members'
 import { Profile } from '@/types/database'
 
 const POSITION_LABEL: Record<string, string> = {
@@ -22,6 +23,19 @@ type Props = {
 
 export function MemberListWithSearch({ members, isAdmin }: Props) {
   const [query, setQuery] = useState('')
+  // 楽観的 UI 用: memberId → gym_fee_paid
+  const [paidMap, setPaidMap] = useState<Record<string, boolean>>(
+    () => Object.fromEntries(members.map((m) => [m.id, m.gym_fee_paid]))
+  )
+  const [, startTransition] = useTransition()
+
+  function handleToggle(memberId: string) {
+    const next = !paidMap[memberId]
+    setPaidMap((prev) => ({ ...prev, [memberId]: next }))
+    startTransition(() => {
+      toggleGymFeePaid(memberId, next)
+    })
+  }
 
   const filtered = query.trim()
     ? members.filter((m) =>
@@ -45,46 +59,76 @@ export function MemberListWithSearch({ members, isAdmin }: Props) {
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         {filtered.length > 0 ? (
           <ul className="divide-y divide-gray-100">
-            {filtered.map((member) => (
-              <li key={member.id} className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50 transition-colors">
-                <Link href={`/members/${member.id}`} className="flex items-center gap-4 flex-1 min-w-0">
-                  <Avatar>
-                    <AvatarImage src={member.avatar_url ?? undefined} />
-                    <AvatarFallback className="bg-orange-100 text-orange-700">
-                      {member.name.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-gray-900">{member.name}</span>
-                      {member.role === 'admin' && (
-                        <Badge variant="secondary" className="text-xs">管理者</Badge>
-                      )}
+            {filtered.map((member) => {
+              const paid = paidMap[member.id] ?? member.gym_fee_paid
+              return (
+                <li key={member.id} className="flex items-center gap-3 px-4 lg:px-6 py-4 hover:bg-gray-50 transition-colors">
+                  {/* メンバー情報 */}
+                  <Link href={`/members/${member.id}`} className="flex items-center gap-4 flex-1 min-w-0">
+                    <Avatar>
+                      <AvatarImage src={member.avatar_url ?? undefined} />
+                      <AvatarFallback className="bg-orange-100 text-orange-700">
+                        {member.name.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-gray-900">{member.name}</span>
+                        {member.role === 'admin' && (
+                          <Badge variant="secondary" className="text-xs">管理者</Badge>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-500 mt-0.5">
+                        {member.position ? POSITION_LABEL[member.position] ?? member.position : '未設定'}
+                      </p>
                     </div>
-                    <p className="text-sm text-gray-500 mt-0.5">
-                      {member.position ? POSITION_LABEL[member.position] ?? member.position : '未設定'}
-                    </p>
-                  </div>
-                  {member.jersey_no !== null && (
-                    <span className="text-lg font-bold text-gray-300 shrink-0">
-                      #{member.jersey_no}
+                    {member.jersey_no !== null && (
+                      <span className="text-lg font-bold text-gray-300 shrink-0">
+                        #{member.jersey_no}
+                      </span>
+                    )}
+                  </Link>
+
+                  {/* 振込状況 */}
+                  {isAdmin ? (
+                    <button
+                      onClick={() => handleToggle(member.id)}
+                      title={paid ? '振込済（クリックで未振込に変更）' : '未振込（クリックで振込済に変更）'}
+                      className={`shrink-0 flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium transition-colors ${
+                        paid
+                          ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                          : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                      }`}
+                    >
+                      {paid ? '✅ 振込済' : '⬜ 未振込'}
+                    </button>
+                  ) : (
+                    <span
+                      className={`shrink-0 flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+                        paid
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-gray-100 text-gray-400'
+                      }`}
+                    >
+                      {paid ? '✅ 振込済' : '⬜ 未振込'}
                     </span>
                   )}
-                </Link>
 
-                {isAdmin && (
-                  <div className="flex items-center gap-2 shrink-0">
-                    <Link
-                      href={`/members/${member.id}/edit`}
-                      className="text-xs text-gray-400 hover:text-orange-500 transition-colors px-2 py-1"
-                    >
-                      編集
-                    </Link>
-                    <DeleteMemberButton memberId={member.id} memberName={member.name} />
-                  </div>
-                )}
-              </li>
-            ))}
+                  {/* admin用: 編集・削除 */}
+                  {isAdmin && (
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Link
+                        href={`/members/${member.id}/edit`}
+                        className="text-xs text-gray-400 hover:text-orange-500 transition-colors px-2 py-1"
+                      >
+                        編集
+                      </Link>
+                      <DeleteMemberButton memberId={member.id} memberName={member.name} />
+                    </div>
+                  )}
+                </li>
+              )
+            })}
           </ul>
         ) : (
           <p className="text-center text-gray-500 py-12">

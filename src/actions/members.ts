@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { revalidatePath } from 'next/cache'
 
 export type ActionState = { error: string | null }
 
@@ -117,4 +118,17 @@ export async function deleteMember(id: string) {
   await supabase.from('profiles').delete().eq('id', id)
 
   redirect('/members')
+}
+
+export async function toggleGymFeePaid(memberId: string, paid: boolean) {
+  const admin = await getAdminProfile()
+  if (!admin) return
+
+  const supabase = await createClient()
+  await supabase
+    .from('profiles')
+    .update({ gym_fee_paid: paid })
+    .eq('id', memberId)
+
+  revalidatePath('/members')
 }
