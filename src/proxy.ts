@@ -13,6 +13,7 @@ export async function proxy(request: NextRequest) {
     !pathname.startsWith('/login') &&
     !pathname.startsWith('/register') &&
     !pathname.startsWith('/public-members') &&
+    !pathname.startsWith('/guide') &&
     !pathname.startsWith('/api')
   ) {
     return NextResponse.redirect(new URL('/login', request.url))
