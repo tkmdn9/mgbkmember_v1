@@ -34,6 +34,13 @@ export async function createMember(formData: FormData) {
   if (!name) return
 
   const supabase = await createClient()
+
+  if (jerseyNo) {
+    const { data: taken } = await supabase
+      .from('profiles').select('id').eq('jersey_no', parseInt(jerseyNo)).single()
+    if (taken) redirect('/members/new?error=jersey_taken')
+  }
+
   await supabase.from('profiles').insert({
     name,
     jersey_no: jerseyNo ? parseInt(jerseyNo) : null,
@@ -60,6 +67,13 @@ export async function updateMember(id: string, formData: FormData) {
   if (!name) return
 
   const supabase = await createClient()
+
+  if (jerseyNo) {
+    const { data: taken } = await supabase
+      .from('profiles').select('id').eq('jersey_no', parseInt(jerseyNo)).neq('id', id).single()
+    if (taken) redirect(`/members/${id}/edit?error=jersey_taken`)
+  }
+
   await supabase
     .from('profiles')
     .update({
@@ -90,6 +104,12 @@ export async function updateSelfProfile(id: string, formData: FormData) {
   const position   = (formData.get('position') as string) || null
   const bio        = (formData.get('bio') as string)?.trim() || null
   const department = (formData.get('department') as string)?.trim() || null
+
+  if (jerseyNo) {
+    const { data: taken } = await supabase
+      .from('profiles').select('id').eq('jersey_no', parseInt(jerseyNo)).neq('id', id).single()
+    if (taken) redirect(`/members/${id}/edit?error=jersey_taken`)
+  }
 
   await supabase
     .from('profiles')

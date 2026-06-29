@@ -12,7 +12,10 @@ const POSITIONS = [
   { value: 'C',  label: 'C（センター）' },
 ]
 
-export default async function NewMemberPage() {
+type Props = { searchParams: Promise<{ error?: string }> }
+
+export default async function NewMemberPage({ searchParams }: Props) {
+  const { error } = await searchParams
   // admin以外はリダイレクト
   const cookieStore = await cookies()
   const userName = cookieStore.get('proto_user_name')?.value ?? ''
@@ -50,6 +53,11 @@ export default async function NewMemberPage() {
               placeholder="例: 23"
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
             />
+            {error === 'jersey_taken' && (
+              <p className="mt-1 text-xs text-red-500">
+                この背番号はすでに他のメンバーが使用しています。
+              </p>
+            )}
           </div>
 
           {/* ポジション */}

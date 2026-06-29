@@ -33,6 +33,12 @@ async function registerAction(formData: FormData) {
   const bio        = (formData.get('bio') as string)?.trim() || null
   const department = (formData.get('department') as string)?.trim() || null
 
+  if (jerseyNo) {
+    const { data: takenJersey } = await supabase
+      .from('profiles').select('id').eq('jersey_no', parseInt(jerseyNo)).single()
+    if (takenJersey) redirect('/register?error=jersey_taken')
+  }
+
   await supabase.from('profiles').insert({
     name,
     jersey_no: jerseyNo ? parseInt(jerseyNo) : null,
@@ -91,6 +97,11 @@ export default async function RegisterPage({ searchParams }: Props) {
               placeholder="例: 23"
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
             />
+            {error === 'jersey_taken' && (
+              <p className="mt-1 text-xs text-red-500">
+                この背番号はすでに他のメンバーが使用しています。
+              </p>
+            )}
           </div>
 
           {/* ポジション */}
