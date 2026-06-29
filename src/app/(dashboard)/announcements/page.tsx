@@ -25,9 +25,9 @@ export default async function AnnouncementsPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between gap-2 mb-6 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">📢 お知らせ</h1>
+          <h1 className="text-xl lg:text-2xl font-bold text-gray-900">📢 お知らせ</h1>
           <p className="text-gray-500 mt-1">{announcements?.length ?? 0} 件</p>
         </div>
         {/* adminだけ「投稿する」ボタンを表示 */}

@@ -35,9 +35,9 @@ export default async function MembersPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between gap-2 mb-6 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">👥 メンバー一覧</h1>
+          <h1 className="text-xl lg:text-2xl font-bold text-gray-900">👥 メンバー一覧</h1>
           <p className="text-gray-500 mt-1">全 {members?.length ?? 0} 名</p>
         </div>
         {isAdmin && (
@@ -75,7 +75,7 @@ export default async function MembersPage() {
                     </p>
                   </div>
                   {member.jersey_no !== null && (
-                    <span className="text-2xl font-bold text-gray-300">
+                    <span className="text-lg font-bold text-gray-300 shrink-0">
                       #{member.jersey_no}
                     </span>
                   )}

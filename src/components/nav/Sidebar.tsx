@@ -23,7 +23,7 @@ export function Sidebar({ userName, profileId }: Props) {
   const pathname = usePathname()
 
   return (
-    <aside className="w-56 shrink-0 bg-white border-r border-gray-200 flex flex-col h-screen sticky top-0">
+    <aside className="hidden lg:flex w-56 shrink-0 bg-white border-r border-gray-200 flex-col h-screen sticky top-0">
       {/* ロゴ */}
       <div className="px-4 py-5 border-b border-gray-100">
         <span className="text-lg font-bold">🏀 MUITバスケ同好会</span>
