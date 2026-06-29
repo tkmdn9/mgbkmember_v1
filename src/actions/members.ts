@@ -27,7 +27,9 @@ export async function createMember(formData: FormData) {
   const name      = (formData.get('name') as string)?.trim()
   const jerseyNo  = formData.get('jersey_no') as string
   const position  = (formData.get('position') as string) || null
-  const role      = (formData.get('role') as string) || 'member'
+  const role       = (formData.get('role') as string) || 'member'
+  const bio        = (formData.get('bio') as string)?.trim() || null
+  const department = (formData.get('department') as string)?.trim() || null
 
   if (!name) return
 
@@ -36,6 +38,8 @@ export async function createMember(formData: FormData) {
     name,
     jersey_no: jerseyNo ? parseInt(jerseyNo) : null,
     position:  position || null,
+    bio,
+    department,
     role,
   })
 
@@ -49,7 +53,9 @@ export async function updateMember(id: string, formData: FormData) {
   const name     = (formData.get('name') as string)?.trim()
   const jerseyNo = formData.get('jersey_no') as string
   const position = (formData.get('position') as string) || null
-  const role     = (formData.get('role') as string) || 'member'
+  const role       = (formData.get('role') as string) || 'member'
+  const bio        = (formData.get('bio') as string)?.trim() || null
+  const department = (formData.get('department') as string)?.trim() || null
 
   if (!name) return
 
@@ -60,7 +66,38 @@ export async function updateMember(id: string, formData: FormData) {
       name,
       jersey_no: jerseyNo ? parseInt(jerseyNo) : null,
       position:  position || null,
+      bio,
+      department,
       role,
+    })
+    .eq('id', id)
+
+  redirect(`/members/${id}`)
+}
+
+export async function updateSelfProfile(id: string, formData: FormData) {
+  const cookieStore = await cookies()
+  const userName = cookieStore.get('proto_user_name')?.value
+  if (!userName) redirect('/login')
+
+  const supabase = await createClient()
+  const { data: myProfile } = await supabase
+    .from('profiles').select('id').eq('name', userName).single()
+
+  if (!myProfile || myProfile.id !== id) redirect('/members')
+
+  const jerseyNo   = formData.get('jersey_no') as string
+  const position   = (formData.get('position') as string) || null
+  const bio        = (formData.get('bio') as string)?.trim() || null
+  const department = (formData.get('department') as string)?.trim() || null
+
+  await supabase
+    .from('profiles')
+    .update({
+      jersey_no: jerseyNo ? parseInt(jerseyNo) : null,
+      position:  position || null,
+      bio,
+      department,
     })
     .eq('id', id)
 

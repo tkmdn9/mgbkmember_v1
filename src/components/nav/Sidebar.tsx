@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { LogOut } from 'lucide-react'
 import { logout } from '@/actions/auth'
 
 const NAV_ITEMS = [
@@ -24,7 +25,7 @@ export function Sidebar({ userName }: Props) {
     <aside className="w-56 shrink-0 bg-white border-r border-gray-200 flex flex-col h-screen sticky top-0">
       {/* ロゴ */}
       <div className="px-4 py-5 border-b border-gray-100">
-        <span className="text-lg font-bold">🏀 バスケ同好会</span>
+        <span className="text-lg font-bold">🏀 MUITバスケ同好会</span>
       </div>
 
       {/* ナビリンク */}
@@ -50,15 +51,25 @@ export function Sidebar({ userName }: Props) {
       </nav>
 
       {/* ユーザー情報 & ログアウト */}
-      <div className="px-4 py-4 border-t border-gray-100">
-        <p className="text-xs text-gray-500 mb-2">ログイン中</p>
-        <p className="text-sm font-medium text-gray-800 truncate mb-3">{userName}</p>
-        {/* form + Server Action でログアウト */}
+      <div className="px-3 py-3 border-t border-gray-100">
+        <div className="flex items-center gap-3 px-2 py-2 rounded-lg bg-gray-50 mb-2">
+          {/* アバター */}
+          <div className="w-9 h-9 rounded-full bg-orange-500 text-white font-bold text-sm flex items-center justify-center shrink-0">
+            {userName.charAt(0)}
+          </div>
+          {/* 名前 */}
+          <div className="flex-1 min-w-0">
+            <p className="text-xs text-gray-400 leading-none mb-0.5">ログイン中</p>
+            <p className="text-sm font-semibold text-gray-800 truncate">{userName}</p>
+          </div>
+        </div>
+        {/* ログアウトボタン */}
         <form action={logout}>
           <button
             type="submit"
-            className="w-full text-xs text-gray-500 hover:text-red-500 transition-colors text-left"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:bg-red-50 hover:text-red-500 transition-colors"
           >
+            <LogOut size={15} />
             ログアウト
           </button>
         </form>

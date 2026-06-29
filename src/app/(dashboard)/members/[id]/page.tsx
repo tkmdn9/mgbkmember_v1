@@ -36,8 +36,9 @@ export default async function MemberDetailPage({ params }: Props) {
   const cookieStore = await cookies()
   const userName = cookieStore.get('proto_user_name')?.value ?? ''
   const { data: myProfile } = await supabase
-    .from('profiles').select('role').eq('name', userName).single()
+    .from('profiles').select('id, role').eq('name', userName).single()
   const isAdmin = myProfile?.role === 'admin'
+  const isSelf  = myProfile?.id === id
 
   const profile = member as Profile
 
@@ -77,6 +78,18 @@ export default async function MemberDetailPage({ params }: Props) {
                   : '未設定'}
               </dd>
             </div>
+            {profile.department && (
+              <div className="flex justify-between py-3">
+                <dt className="text-sm text-gray-500">部署</dt>
+                <dd className="text-sm font-medium">{profile.department}</dd>
+              </div>
+            )}
+            {profile.bio && (
+              <div className="py-3">
+                <dt className="text-sm text-gray-500 mb-1">趣味・一言</dt>
+                <dd className="text-sm font-medium">{profile.bio}</dd>
+              </div>
+            )}
             <div className="flex justify-between py-3">
               <dt className="text-sm text-gray-500">登録日</dt>
               <dd className="text-sm font-medium">
@@ -85,15 +98,17 @@ export default async function MemberDetailPage({ params }: Props) {
             </div>
           </dl>
 
-          {/* admin用: 編集・削除ボタン */}
-          {isAdmin && (
+          {/* admin または自分: 編集ボタン */}
+          {(isAdmin || isSelf) && (
             <div className="flex gap-3 justify-end mt-6 pt-4 border-t border-gray-100">
-              <DeleteMemberButton memberId={profile.id} memberName={profile.name} />
+              {isAdmin && (
+                <DeleteMemberButton memberId={profile.id} memberName={profile.name} />
+              )}
               <Link
                 href={`/members/${profile.id}/edit`}
                 className="px-4 py-2 text-sm bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-medium"
               >
-                編集する
+                {isSelf && !isAdmin ? 'プロフィールを編集' : '編集する'}
               </Link>
             </div>
           )}

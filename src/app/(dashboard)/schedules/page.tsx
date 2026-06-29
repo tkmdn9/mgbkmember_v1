@@ -68,11 +68,19 @@ export default async function SchedulesPage() {
                   )}
                 </div>
                 {isAdmin && (
-                  <form action={deleteSchedule.bind(null, s.id)}>
-                    <button type="submit" className="text-xs text-gray-400 hover:text-red-500 transition-colors">
-                      削除
-                    </button>
-                  </form>
+                  <div className="flex flex-col items-end gap-2 shrink-0">
+                    <Link
+                      href={`/schedules/${s.id}`}
+                      className="text-xs text-orange-500 hover:text-orange-600 font-medium transition-colors"
+                    >
+                      出欠を確認 →
+                    </Link>
+                    <form action={deleteSchedule.bind(null, s.id)}>
+                      <button type="submit" className="text-xs text-gray-400 hover:text-red-500 transition-colors">
+                        削除
+                      </button>
+                    </form>
+                  </div>
                 )}
               </div>
             </div>

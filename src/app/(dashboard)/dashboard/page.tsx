@@ -37,7 +37,7 @@ export default async function DashboardPage() {
         <h1 className="text-2xl font-bold text-gray-900">
           ようこそ、{userName}さん 👋
         </h1>
-        <p className="text-gray-500 mt-1">バスケ同好会メンバー管理システム</p>
+        <p className="text-gray-500 mt-1">MUITバスケ同好会メンバー管理システム</p>
       </div>
 
       {/* セクションカード一覧 */}

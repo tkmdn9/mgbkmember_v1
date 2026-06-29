@@ -7,7 +7,14 @@ export async function proxy(request: NextRequest) {
   const userName = request.cookies.get('proto_user_name')?.value
 
   // 未ログインでダッシュボード系のページにアクセスしたらログインへ
-  if (!userName && !pathname.startsWith('/login') && !pathname.startsWith('/api')) {
+  // /public-members と /register は認証不要の公開ページ
+  if (
+    !userName &&
+    !pathname.startsWith('/login') &&
+    !pathname.startsWith('/register') &&
+    !pathname.startsWith('/public-members') &&
+    !pathname.startsWith('/api')
+  ) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 

@@ -7,6 +7,8 @@ export type Profile = {
   jersey_no: number | null
   position: string | null  // PG / SG / SF / PF / C
   role: 'admin' | 'member'
+  bio: string | null
+  department: string | null
   avatar_url: string | null
   created_at: string
 }
