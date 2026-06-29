@@ -92,7 +92,7 @@ export default async function EditMemberPage({ params }: Props) {
             <input
               name="department" type="text"
               defaultValue={member.department ?? ''}
-              placeholder="例: 情報工学科3年"
+              placeholder="例: DX推進部"
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
             />
           </div>

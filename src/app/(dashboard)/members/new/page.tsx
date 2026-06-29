@@ -71,7 +71,7 @@ export default async function NewMemberPage() {
             <label className="block text-sm font-medium text-gray-700 mb-1">部署（任意）</label>
             <input
               name="department" type="text"
-              placeholder="例: 情報工学科3年"
+              placeholder="例: DX推進部"
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
             />
           </div>
