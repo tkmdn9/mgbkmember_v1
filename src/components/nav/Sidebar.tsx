@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useState, useRef, useEffect } from 'react'
 import { LogOut } from 'lucide-react'
 import { logout } from '@/actions/auth'
 
@@ -19,8 +20,21 @@ type Props = {
 }
 
 export function Sidebar({ userName, profileId }: Props) {
-  // usePathname() は現在のURLパスを返すフック (Client Componentでのみ使える)
   const pathname = usePathname()
+  const [isOpen, setIsOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleOutsideClick(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+    if (isOpen) {
+      document.addEventListener('mousedown', handleOutsideClick)
+    }
+    return () => document.removeEventListener('mousedown', handleOutsideClick)
+  }, [isOpen])
 
   return (
     <aside className="hidden lg:flex w-56 shrink-0 bg-white border-r border-gray-200 flex-col h-screen sticky top-0">
@@ -32,7 +46,6 @@ export function Sidebar({ userName, profileId }: Props) {
       {/* ナビリンク */}
       <nav className="flex-1 px-2 py-4 flex flex-col gap-1">
         {NAV_ITEMS.map((item) => {
-          // 現在のページかどうかでスタイルを切り替える
           const isActive = pathname === item.href
           return (
             <Link
@@ -51,39 +64,50 @@ export function Sidebar({ userName, profileId }: Props) {
         })}
       </nav>
 
-      {/* ユーザー情報 & ログアウト */}
-      <div className="px-3 py-3 border-t border-gray-100">
-        <Link
-          href={profileId ? `/members/${profileId}` : '#'}
-          className="flex items-center gap-3 px-2 py-2 rounded-lg bg-gray-50 mb-2 hover:bg-orange-50 transition-colors"
+      {/* ユーザーカード（クリックでドロップダウン） */}
+      <div className="px-3 py-3 border-t border-gray-100 relative" ref={menuRef}>
+        <button
+          onClick={() => setIsOpen((prev) => !prev)}
+          className="w-full flex items-center gap-3 px-2 py-2 rounded-lg bg-gray-50 hover:bg-orange-50 transition-colors"
         >
-          {/* アバター */}
           <div className="w-9 h-9 rounded-full bg-orange-500 text-white font-bold text-sm flex items-center justify-center shrink-0">
             {userName.charAt(0)}
           </div>
-          {/* 名前 */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 text-left">
             <p className="text-xs text-gray-400 leading-none mb-0.5">ログイン中</p>
             <p className="text-sm font-semibold text-gray-800 truncate">{userName}</p>
           </div>
-        </Link>
-        {/* 利用ガイド */}
-        <Link
-          href="/guide"
-          className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition-colors mb-1"
-        >
-          📖 利用ガイド
-        </Link>
-        {/* ログアウトボタン */}
-        <form action={logout}>
-          <button
-            type="submit"
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-500 hover:bg-red-50 hover:text-red-500 transition-colors"
-          >
-            <LogOut size={15} />
-            ログアウト
-          </button>
-        </form>
+        </button>
+
+        {isOpen && (
+          <div className="absolute bottom-full left-3 right-3 mb-1 bg-white rounded-xl border border-gray-200 shadow-lg overflow-hidden z-50">
+            <Link
+              href={profileId ? `/members/${profileId}` : '#'}
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-orange-50 transition-colors"
+            >
+              <span>👤</span>
+              マイプロフィール
+            </Link>
+            <Link
+              href="/guide"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-orange-50 transition-colors border-t border-gray-100"
+            >
+              <span>📖</span>
+              利用ガイド
+            </Link>
+            <form action={logout} className="border-t border-gray-100">
+              <button
+                type="submit"
+                className="w-full flex items-center gap-2 px-4 py-3 text-sm text-red-500 hover:bg-red-50 transition-colors"
+              >
+                <LogOut size={15} />
+                ログアウト
+              </button>
+            </form>
+          </div>
+        )}
       </div>
     </aside>
   )

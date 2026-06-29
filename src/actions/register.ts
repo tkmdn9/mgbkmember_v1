@@ -20,12 +20,6 @@ export async function registerAction(prevState: RegisterState, formData: FormDat
   const bio        = (formData.get('bio') as string)?.trim() || null
   const department = (formData.get('department') as string)?.trim() || null
 
-  if (jerseyNo) {
-    const { data: takenJersey } = await supabase
-      .from('profiles').select('id').eq('jersey_no', parseInt(jerseyNo)).single()
-    if (takenJersey) return { error: 'jersey_taken' }
-  }
-
   await supabase.from('profiles').insert({
     name,
     jersey_no: jerseyNo ? parseInt(jerseyNo) : null,

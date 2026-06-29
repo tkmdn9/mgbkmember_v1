@@ -1,18 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { cookies } from 'next/headers'
-import { Profile } from '@/types/database'
-import { Badge } from '@/components/ui/badge'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { DeleteMemberButton } from '@/components/members/DeleteMemberButton'
+import { MemberListWithSearch } from '@/components/members/MemberListWithSearch'
 import Link from 'next/link'
-
-const POSITION_LABEL: Record<string, string> = {
-  PG: 'ポイントガード',
-  SG: 'シューティングガード',
-  SF: 'スモールフォワード',
-  PF: 'パワーフォワード',
-  C: 'センター',
-}
 
 export default async function MembersPage() {
   const supabase = await createClient()
@@ -26,7 +15,6 @@ export default async function MembersPage() {
     return <p className="text-red-500">データの取得に失敗しました: {error.message}</p>
   }
 
-  // admin判定
   const cookieStore = await cookies()
   const userName = cookieStore.get('proto_user_name')?.value ?? ''
   const { data: myProfile } = await supabase
@@ -50,56 +38,7 @@ export default async function MembersPage() {
         )}
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        {members && members.length > 0 ? (
-          <ul className="divide-y divide-gray-100">
-            {members.map((member: Profile) => (
-              <li key={member.id} className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50 transition-colors">
-                {/* メンバー情報（クリックで詳細へ） */}
-                <Link href={`/members/${member.id}`} className="flex items-center gap-4 flex-1 min-w-0">
-                  <Avatar>
-                    <AvatarImage src={member.avatar_url ?? undefined} />
-                    <AvatarFallback className="bg-orange-100 text-orange-700">
-                      {member.name.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-gray-900">{member.name}</span>
-                      {member.role === 'admin' && (
-                        <Badge variant="secondary" className="text-xs">管理者</Badge>
-                      )}
-                    </div>
-                    <p className="text-sm text-gray-500 mt-0.5">
-                      {member.position ? POSITION_LABEL[member.position] ?? member.position : '未設定'}
-                    </p>
-                  </div>
-                  {member.jersey_no !== null && (
-                    <span className="text-lg font-bold text-gray-300 shrink-0">
-                      #{member.jersey_no}
-                    </span>
-                  )}
-                </Link>
-
-                {/* admin用: 編集・削除ボタン */}
-                {isAdmin && (
-                  <div className="flex items-center gap-2 shrink-0">
-                    <Link
-                      href={`/members/${member.id}/edit`}
-                      className="text-xs text-gray-400 hover:text-orange-500 transition-colors px-2 py-1"
-                    >
-                      編集
-                    </Link>
-                    <DeleteMemberButton memberId={member.id} memberName={member.name} />
-                  </div>
-                )}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-center text-gray-500 py-12">メンバーがいません。</p>
-        )}
-      </div>
+      <MemberListWithSearch members={members ?? []} isAdmin={isAdmin} />
     </div>
   )
 }
