@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { cookies } from 'next/headers'
 import { notFound, redirect } from 'next/navigation'
 import { Profile } from '@/types/database'
+import { toggleGymFeePaid } from '@/actions/members'
 import Link from 'next/link'
 
 function formatDate(dateStr: string) {
@@ -47,7 +48,7 @@ export default async function ScheduleDetailPage({ params, searchParams }: Props
   if (error || !schedule) notFound()
 
   const { data: members } = await supabase
-    .from('profiles').select('id, name, jersey_no, position').order('name')
+    .from('profiles').select('id, name, jersey_no, position, gym_fee_paid').order('name')
 
   const { data: attendances } = await supabase
     .from('attendances').select('user_id, status').eq('schedule_id', id)
@@ -140,9 +141,10 @@ export default async function ScheduleDetailPage({ params, searchParams }: Props
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         {displayedMembers.length > 0 ? (
           <ul className="divide-y divide-gray-100">
-            {displayedMembers.map((member: Pick<Profile, 'id' | 'name' | 'jersey_no' | 'position'>) => {
+            {displayedMembers.map((member: Pick<Profile, 'id' | 'name' | 'jersey_no' | 'position' | 'gym_fee_paid'>) => {
               const status = statusMap[member.id] ?? 'pending'
               const cfg = STATUS_CONFIG[status]
+              const toggleAction = toggleGymFeePaid.bind(null, member.id, !member.gym_fee_paid)
               return (
                 <li key={member.id} className="flex items-center justify-between px-5 py-3">
                   <div className="flex items-center gap-3">
@@ -156,9 +158,25 @@ export default async function ScheduleDetailPage({ params, searchParams }: Props
                       )}
                     </div>
                   </div>
-                  <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${cfg.bg} ${cfg.text}`}>
-                    {cfg.label}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    {/* 振込状況: クリックでトグル */}
+                    <form action={toggleAction}>
+                      <button
+                        type="submit"
+                        title={member.gym_fee_paid ? '振込済（クリックで取消）' : 'クリックで振込済にする'}
+                        className={`text-xs font-medium px-2.5 py-1 rounded-full transition-colors ${
+                          member.gym_fee_paid
+                            ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                            : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                        }`}
+                      >
+                        {member.gym_fee_paid ? '✅ 振込済' : '⬜ 未振込'}
+                      </button>
+                    </form>
+                    <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${cfg.bg} ${cfg.text}`}>
+                      {cfg.label}
+                    </span>
+                  </div>
                 </li>
               )
             })}

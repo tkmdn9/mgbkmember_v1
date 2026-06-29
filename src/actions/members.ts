@@ -131,4 +131,5 @@ export async function toggleGymFeePaid(memberId: string, paid: boolean) {
     .eq('id', memberId)
 
   revalidatePath('/members')
+  revalidatePath('/schedules', 'layout')
 }
