@@ -30,13 +30,11 @@ export default async function AttendancePage() {
     .eq('name', userName)
     .single()
 
-  // 公開中かつ今日以降のスケジュールを取得 (JST基準)
-  const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Tokyo' }).format(new Date())
+  // 公開中のスケジュールを全件取得（日付フィルターなし）
   const { data: schedules } = await supabase
     .from('schedules')
     .select('*')
     .eq('is_hidden', false)
-    .gte('date', today)
     .order('date', { ascending: true })
 
   if (!myProfile) {
