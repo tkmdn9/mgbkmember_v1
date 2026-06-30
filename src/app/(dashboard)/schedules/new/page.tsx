@@ -12,8 +12,8 @@ export default async function NewSchedulePage() {
     .from('profiles').select('role').eq('name', userName).single()
   if (profile?.role !== 'admin') redirect('/schedules')
 
-  // デフォルト日付を今日に設定
-  const today = new Date().toISOString().split('T')[0]
+  // デフォルト日付を今日に設定 (JST基準)
+  const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Tokyo' }).format(new Date())
 
   return (
     <div className="max-w-lg">

@@ -44,6 +44,23 @@ export async function createSchedule(formData: FormData) {
   redirect('/schedules')
 }
 
+export async function toggleScheduleVisibility(id: string, currentHidden: boolean) {
+  const admin = await getAdminProfile()
+  if (!admin) return
+
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('schedules')
+    .update({ is_hidden: !currentHidden })
+    .eq('id', id)
+
+  if (error) {
+    // is_hidden カラムが未追加の場合など
+    redirect('/schedules?error=update_failed')
+  }
+  redirect('/schedules')
+}
+
 export async function deleteSchedule(id: string) {
   const admin = await getAdminProfile()
   if (!admin) return

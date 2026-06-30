@@ -29,6 +29,7 @@ export type Schedule = {
   end_time: string
   location: string
   note: string | null
+  is_hidden: boolean
   created_by: string | null
   created_at: string
 }
